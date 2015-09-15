@@ -1,0 +1,9 @@
+{
+    "name": "silverstripe/deploynaut-variables",
+    "description": "Provides self-service environment variable configuration capability for Deploynaut",
+    "type": "silverstripe-module",
+    "require": {
+        "silverstripe/deploynaut": "*"
+    },
+    "license": "BSD-3-Clause"
+}
