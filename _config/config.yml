@@ -1,8 +1,8 @@
 ---
-Name: deploynaut-envconfig
+Name: deploynaut-environmentconfig
 After:
   - '#deploynaut'
 ---
 DNEnvironment:
   extensions:
-    - '\EnvironmentVariables\BackendAccess'
+    - 'EnvironmentConfig\EnvironmentExtension'

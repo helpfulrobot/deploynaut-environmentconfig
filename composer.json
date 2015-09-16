@@ -1,6 +1,6 @@
 {
-    "name": "silverstripe/deploynaut-variables",
-    "description": "Provides self-service environment variable configuration capability for Deploynaut",
+    "name": "silverstripe/deploynaut-environmentconfig",
+    "description": "Provides self-service environment configuration capability for Deploynaut",
     "type": "silverstripe-module",
     "require": {
         "silverstripe/deploynaut": "*"
