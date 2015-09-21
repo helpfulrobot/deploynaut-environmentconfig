@@ -1,4 +1,8 @@
 <?php
+/**
+ * EnvironmentConfig stores configurations in the SilverStripe's database,
+ * and versions them using Versioned API. Versions are keyed by SHA.
+ */
 
 use Symfony\Component\Yaml\Yaml;
 
@@ -7,6 +11,10 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 	private static $db = array(
 		'SHA' => 'Varchar',
 		'Data' => 'Text'
+	);
+
+	private static $indexes = array(
+		'SHA' => true
 	);
 
 	private static $extensions = array(
@@ -19,6 +27,7 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 
 	public function setVariables($array) {
 		$data = $this->getVersionDataArray();
+		// Only updating the environment variables.
 		$data['mysite::_ss_env'] = $array;
 		$this->writeVersionFromArray($data);
 
@@ -27,6 +36,7 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 
 	public function getVariables($sha = null) {
 		$data = $this->getVersionDataArray($sha);
+		// Only interested in the environment variables.
 		if (!empty($data['mysite::_ss_env'])) return $data['mysite::_ss_env'];
 
 		return array();
@@ -47,7 +57,7 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 			$to = array();
 		}
 
-		// Note the differences by writting down the keys that changed.
+		// Produce listings of keys that are changing.
 		$diff = array();
 
 		$added = array_keys(array_diff_key($to, $from));
@@ -77,17 +87,32 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 		return $this->SHA;
 	}
 
+	/**
+	 * Data content is treated as canonical, keep the SHA up to date
+	 * so it can be found later.
+	 */
 	public function onBeforeWrite() {
 		parent::onBeforeWrite();
 		$this->SHA = sha1($this->Data);
 	}
 
+	/**
+	 * Write the array data into the YAML Data field.
+	 *
+	 * @param array $array
+	 */
 	protected function writeVersionFromArray($array) {
 		$this->Data = Yaml::dump($array);
 		// Only write if the data differs.
 		if (sha1($this->Data)!==$this->SHA) $this->write();
 	}
 
+	/**
+	 * Fetch the array from the specified SHA.
+	 *
+	 * @param string $sha
+	 * @return array
+	 */
 	protected function getVersionDataArray($sha = null) {
 		$data = $this->getVersionData($sha);
 
@@ -98,6 +123,12 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 		}
 	}
 
+	/**
+	 * Fetch the canonical data from the specified SHA.
+	 *
+	 * @param string $sha
+	 * @return string
+	 */
 	protected function getVersionData($sha = null) {
 		if (!$sha) {
 			$v = $this;

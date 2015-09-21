@@ -2,6 +2,11 @@ var _ = require('underscore');
 var VariableTable = require('./variable_table.jsx');
 var VariableEditor = require('./variable_editor.jsx');
 
+/**
+ * Variables provides a UI for displaying and editing environment variables. The main state is held here,
+ * and displayed via VariableTable. Data is copied into the VariableEditor for editing, and copied back
+ * if VariableEditor's save is successful.
+ */
 var Variables = React.createClass({
 
 	getInitialState: function() {
@@ -20,6 +25,9 @@ var Variables = React.createClass({
 		};
 	},
 
+	/**
+	 * Copy just what's needed into a new instance of the model.
+	 */
 	deepCopyModel: function(from) {
 		var to = [];
 		for (var i=0; i<from.length; i++) {

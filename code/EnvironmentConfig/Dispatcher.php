@@ -1,4 +1,7 @@
 <?php
+/**
+ * EnvironmentConfig\Dispatcher provides controller methods for the environment configuration.
+ */
 
 namespace EnvironmentConfig;
 
@@ -15,6 +18,9 @@ class Dispatcher extends \Extension {
 		self::ACTION_CONFIGURATION
 	);
 
+	/**
+	 * Render configuration form.
+	 */
 	public function configuration() {
 		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
 
@@ -39,10 +45,13 @@ class Dispatcher extends \Extension {
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
 		return $this->owner->render(array(
-			'Variables' => htmlentities(json_encode($env->provideConfig()->getVariables()))
+			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables()))
 		));
 	}
 
+	/**
+	 * Store new version of variables.
+	 */
 	public function save($request) {
 		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
 
@@ -58,9 +67,8 @@ class Dispatcher extends \Extension {
 			return $this->environment404Response();
 		}
 
-		// Convert back to associative array.
 		$data = json_decode($request->postVar('variables'), true);
-		$env->provideConfig()->setVariables($data);
+		$env->getEnvironmentConfigBackend()->setVariables($data);
 	}
 
 }

@@ -1,6 +1,10 @@
 var trim = require('underscore.string/trim');
 var _ = require('underscore');
 
+/**
+ * VariableEditor allows editing variable => value pairs, with an inline "add" and "remove"
+ * capability. Variables need to be kept unique.
+ */
 var VariableEditor = React.createClass({
 	getInitialState: function() {
 		return {
@@ -46,6 +50,13 @@ var VariableEditor = React.createClass({
 			});
 	},
 
+	/**
+	 * Main model is represented by an array, kept in the state. Wrap rows in a proxy object
+	 * so that we can manipulate on them as if they were individual items.
+	 *
+	 * @param int row Row index in the model array. If the index is past the end of the array, it's treated
+	 *	as a new item that can be added into the model.
+	 */
 	rowStateProxy: function(row) {
 		var self = this;
 
@@ -73,6 +84,7 @@ var VariableEditor = React.createClass({
 				self.state.model[row].value = value;
 				updateState();
 			},
+			// Create a new item in the model.
 			add: function(variable, value) {
 				checkNewNeeded();
 				self.state.model[row].variable = variable;
@@ -83,6 +95,7 @@ var VariableEditor = React.createClass({
 				self.state.model[row].deleted = true;
 				updateState();
 			},
+			// Check if the variable's value is unique in the model.
 			isVariableUnique: function(variable) {
 				for (var i=0; i<self.state.model.length; i++) {
 					if (row!=i && self.state.model[i].variable===variable) return false;
@@ -108,7 +121,7 @@ var VariableEditor = React.createClass({
 			if (!item.deleted) {
 				// Rely on the positional number of the model row as the key. As rows are deleted,
 				// the variables will get marked up with "deleted: true", but remain in the model
-				// to ensure react knows what has changed.
+				// to ensure react knows what rows to changed.
 				row = (
 					<VariableEditorRow
 						key={i}
@@ -130,7 +143,6 @@ var VariableEditor = React.createClass({
 		if (this.state.message) {
 			message = (
 				<div className="alert alert-danger">{this.state.message}</div>
-
 			)
 		}
 
@@ -281,6 +293,10 @@ var VariableEditorNew = React.createClass({
 	}
 });
 
+/**
+ * Input field with an ability to show an error message. Pass validate, onValidationFail and onValidationSuccess
+ * callbacks to handle the error messaging.
+ */
 var ValidatableInput = React.createClass({
 	getInitialState: function() {
 		return {

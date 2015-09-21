@@ -9,9 +9,9 @@ class EnvironmentExtension extends \DataExtension {
 	);
 
 	/**
-	 * Ensures EnvironmentConfig object is returned, even if it doesn't exist yet.
+	 * Expose the environment configuration backend.
 	 */
-	public function provideConfig() {
+	public function getEnvironmentConfigBackend() {
 
 		if (!$this->owner->EnvironmentConfigID || !$this->owner->EnvironmentConfig()->ID) {
 			$config = new \EnvironmentConfig();
@@ -28,6 +28,9 @@ class EnvironmentExtension extends \DataExtension {
 		return $config;
 	}
 
+	/**
+	 * Add the "configuration" menu item to the environment screen.
+	 */
 	public function updateMenu($list) {
 		if (!$this->owner->config()->supports_environment_config) return;
 

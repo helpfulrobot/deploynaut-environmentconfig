@@ -1,5 +1,9 @@
 var _ = require('underscore');
 
+/**
+ * VariableTable displays variable => value pairs in a table. It also provides a button
+ * to transition to the editing stage.
+ */
 var VariableTable = React.createClass({
 
 	render: function() {
