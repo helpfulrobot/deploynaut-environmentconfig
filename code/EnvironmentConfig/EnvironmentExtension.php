@@ -28,4 +28,22 @@ class EnvironmentExtension extends \DataExtension {
 		return $config;
 	}
 
+	public function updateMenu($list) {
+		if (!$this->owner->config()->supports_environment_config) return;
+
+		$controller = \Controller::curr();
+		$actionType = $controller->getField('CurrentActionType');
+
+		$list->push(new \ArrayData(array(
+			'Link' => sprintf(
+				'naut/project/%s/environment/%s/configuration',
+				$this->owner->Project()->Name,
+				$this->owner->Name
+			),
+			'Title' => 'Configuration',
+			'IsCurrent' => $this->owner->isCurrent(),
+			'IsSection' => $this->owner->isSection() && $actionType == Dispatcher::ACTION_CONFIGURATION
+		)));
+	}
+
 }
