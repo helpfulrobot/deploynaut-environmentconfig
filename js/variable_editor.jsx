@@ -268,7 +268,7 @@ var VariableEditorNew = React.createClass({
 			return "Variable cannot be empty.";
 		}
 		if (value.match(/[^A-Z_0-9]/)) {
-			return "Only uppercase characters and underscores permitted.";
+			return "Only uppercase characters, digits and underscores permitted.";
 		}
 		if (!this.props.rowState.isVariableUnique(value)) {
 			return "Variable with this name already exists.";
