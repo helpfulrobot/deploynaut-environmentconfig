@@ -37,11 +37,11 @@ var VariableEditor = React.createClass({
 			}
 		}))
 			.then(function() {
-				self.props.editingSuccessful(self.state.model);
 				self.setState({
 					saving: false,
 					message: ""
 				});
+				self.props.editingSuccessful(self.state.model);
 			}, function(data){
 				self.setState({
 					saving: false,
