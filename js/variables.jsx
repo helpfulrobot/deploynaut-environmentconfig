@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var VariableTable = require('./variable_table.jsx');
 var VariableEditor = require('./variable_editor.jsx');
+var Tools = require('./tools.jsx');
 
 /**
  * Variables provides a UI for displaying and editing environment variables. The main state is held here,
@@ -25,33 +26,16 @@ var Variables = React.createClass({
 		};
 	},
 
-	/**
-	 * Copy just what's needed into a new instance of the model.
-	 */
-	deepCopyModel: function(from) {
-		var to = [];
-		for (var i=0; i<from.length; i++) {
-			if (!from[i].deleted) {
-				to[i] = {
-					variable: from[i].variable,
-					value: from[i].value
-				}
-			}
-		}
-
-		return to;
-	},
-
 	startEditing: function() {
 		this.setState({
 			editing: true
 		});
 	},
 
-	editingSuccessful: function(newState) {
+	editingSuccessful: function(newModel) {
 		this.setState({
 			editing: false,
-			model: this.deepCopyModel(newState)
+			model: Tools.deepCopyModel(newModel)
 		});
 	},
 
@@ -74,7 +58,8 @@ var Variables = React.createClass({
 			return (
 				<VariableEditor
 					context={this.props.context}
-					model={this.deepCopyModel(this.state.model)}
+					blacklist={this.props.blacklist}
+					model={Tools.deepCopyModel(this.state.model)}
 					editingSuccessful={this.editingSuccessful}
 					editingCancelled={this.editingCancelled}
 					/>

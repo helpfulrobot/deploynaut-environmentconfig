@@ -1,3 +1,4 @@
+var Tools = require('./tools.jsx');
 var trim = require('underscore.string/trim');
 var _ = require('underscore');
 
@@ -37,11 +38,7 @@ var VariableEditor = React.createClass({
 			}
 		}))
 			.then(function() {
-				self.setState({
-					saving: false,
-					message: ""
-				});
-				self.props.editingSuccessful(self.state.model);
+				self.props.editingSuccessful(Tools.deepCopyModel(self.state.model));
 			}, function(data){
 				self.setState({
 					saving: false,
@@ -67,11 +64,21 @@ var VariableEditor = React.createClass({
 					value: ''
 				});
 			}
-		}
+		};
 
 		var updateState = function() {
 			self.setState({model: self.state.model});
-		}
+		};
+
+		var isVariableUnique = function(variable) {
+			for (var i=0; i<self.state.model.length; i++) {
+				if (row!=i
+					&& !self.state.model[i].deleted
+					&& self.state.model[i].variable===variable
+				) return false;
+			}
+			return true;
+		};
 
 		return ({
 			setVariable: function(variable) {
@@ -95,12 +102,22 @@ var VariableEditor = React.createClass({
 				self.state.model[row].deleted = true;
 				updateState();
 			},
-			// Check if the variable's value is unique in the model.
-			isVariableUnique: function(variable) {
-				for (var i=0; i<self.state.model.length; i++) {
-					if (row!=i && self.state.model[i].variable===variable) return false;
+			validateVariable: function(value) {
+				if (trim(value)==="") {
+					return "Variable cannot be empty.";
 				}
-				return true;
+				if (value.match(/[^a-zA-Z_0-9]/)) {
+					return "Only alphanumerics and underscore permitted.";
+				}
+				if (!isVariableUnique(value)) {
+					return "Variable already exists.";
+				}
+				if (self.props.blacklist) {
+					for (var i=0; i<self.props.blacklist.length; i++) {
+						var re = new RegExp(self.props.blacklist[i]);
+						if (value.match(re)) return "Variable is not allowed.";
+					}
+				}
 			}
 		});
 	},
@@ -178,7 +195,7 @@ var VariableEditorActions = React.createClass({
 		if (!this.props.saving) {
 			return (
 				<div className="bottom-actions variable-editor-actions">
-					<input type="submit" disabled={this.props.disabled} className="btn btn-primary" onClick={this.props.save} value="Save" />
+					<input type="submit" disabled={this.props.disabled} className="btn btn-primary" value="Save" />
 					<button type="button" className="btn btn-default" onClick={this.props.cancel}>Cancel</button>
 				</div>
 			);
@@ -203,15 +220,7 @@ var VariableEditorRow = React.createClass({
 	},
 
 	validateVariable: function(value) {
-		if (trim(value)==="") {
-			return "Variable cannot be empty.";
-		}
-		if (value.match(/[^A-Z_0-9]/)) {
-			return "Only uppercase characters, digits and underscores permitted.";
-		}
-		if (!this.props.rowState.isVariableUnique(value)) {
-			return "Variable already exists.";
-		}
+		return this.props.rowState.validateVariable(value);
 	},
 
 	render: function() {
@@ -264,15 +273,7 @@ var VariableEditorNew = React.createClass({
 	},
 
 	validateVariable: function(value) {
-		if (trim(value)==="") {
-			return "Variable cannot be empty.";
-		}
-		if (value.match(/[^A-Z_0-9]/)) {
-			return "Only uppercase characters, digits and underscores permitted.";
-		}
-		if (!this.props.rowState.isVariableUnique(value)) {
-			return "Variable with this name already exists.";
-		}
+		return this.props.rowState.validateVariable(value);
 	},
 
 	render: function() {

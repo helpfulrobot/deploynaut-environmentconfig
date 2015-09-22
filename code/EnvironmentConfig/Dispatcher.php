@@ -44,8 +44,10 @@ class Dispatcher extends \Extension {
 
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
+		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
 		return $this->owner->render(array(
-			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables()))
+			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables())),
+			'Blacklist' => htmlentities(json_encode($blacklist))
 		));
 	}
 
@@ -58,16 +60,27 @@ class Dispatcher extends \Extension {
 		// Performs canView permission check by limiting visible projects
 		$project = $this->owner->getCurrentProject();
 		if(!$project) {
-			return $this->project404Response();
+			return $this->owner->project404Response();
 		}
 
 		// Performs canView permission check by limiting visible projects
 		$env = $this->owner->getCurrentEnvironment($project);
 		if(!$env) {
-			return $this->environment404Response();
+			return $this->owner->environment404Response();
 		}
 
 		$data = json_decode($request->postVar('variables'), true);
+
+		// Validate against unsafe inputs.
+		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
+		if (!empty($blacklist)) foreach ($data as $variable => $value) {
+			foreach ($blacklist as $filter) {
+				if (preg_match("/$filter/", $variable)) {
+					return new \SS_HTTPResponse(sprintf('Variable %s is blacklisted.', $variable), 403);
+				}
+			}
+		}
+
 		$env->getEnvironmentConfigBackend()->setVariables($data);
 	}
 

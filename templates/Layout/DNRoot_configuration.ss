@@ -17,8 +17,11 @@
 		$Variables
 	</script>
 
-	<script>
+	<script id="environmentconfig-variables-blacklist" type="application/json">
+		$Blacklist
+	</script>
 
+	<script>
 		var environmentConfigContext = {
 			projectUrl: "{$absoluteBaseURL}naut/api/$CurrentProject.Name",
 			envUrl: "{$absoluteBaseURL}{$CurrentEnvironment.Link}",
