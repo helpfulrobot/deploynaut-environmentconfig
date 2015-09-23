@@ -33,6 +33,7 @@ class EnvironmentExtension extends \DataExtension {
 	 */
 	public function updateMenu($list) {
 		if (!$this->owner->Backend()->config()->supports_environment_config) return;
+		if(!\Permission::check(Dispatcher::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE)) return;
 
 		$controller = \Controller::curr();
 		$actionType = $controller->getField('CurrentActionType');
