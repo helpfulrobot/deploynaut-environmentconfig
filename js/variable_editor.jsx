@@ -32,7 +32,7 @@ var VariableEditor = React.createClass({
 		var self = this;
 		Q($.ajax({
 			type: "POST",
-			url: this.props.context.envUrl + '/configuration_save',
+			url: this.props.context.envUrl + '/configuration/save',
 			data: {
 				variables: JSON.stringify(assocArray)
 			}

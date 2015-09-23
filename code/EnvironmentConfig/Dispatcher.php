@@ -5,14 +5,13 @@
 
 namespace EnvironmentConfig;
 
-class Dispatcher extends \Extension {
-
-	public static $allowed_actions = array(
-		'configuration',
-		'save'
-	);
+class Dispatcher extends \DNRoot {
 
 	const ACTION_CONFIGURATION = 'configuration';
+
+	public static $allowed_actions = array(
+		'save'
+	);
 
 	private static $action_types = array(
 		self::ACTION_CONFIGURATION
@@ -21,17 +20,17 @@ class Dispatcher extends \Extension {
 	/**
 	 * Render configuration form.
 	 */
-	public function configuration() {
-		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
+	public function index(SS_HTTPRequest $request) {
+		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
-		$project = $this->owner->getCurrentProject();
+		$project = $this->getCurrentProject();
 		if(!$project) {
 			return $this->project404Response();
 		}
 
 		// Performs canView permission check by limiting visible projects
-		$env = $this->owner->getCurrentEnvironment($project);
+		$env = $this->getCurrentEnvironment($project);
 		if(!$env) {
 			return $this->environment404Response();
 		}
@@ -45,28 +44,28 @@ class Dispatcher extends \Extension {
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
 		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
-		return $this->owner->render(array(
+		return $this->customise(array(
 			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables())),
 			'Blacklist' => htmlentities(json_encode($blacklist))
-		));
+		))->renderWith(array('EnvironmentConfig_configuration', 'DNRoot'));
 	}
 
 	/**
 	 * Store new version of variables.
 	 */
-	public function save($request) {
-		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
+	public function save(SS_HTTPRequest $request) {
+		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
-		$project = $this->owner->getCurrentProject();
+		$project = $this->getCurrentProject();
 		if(!$project) {
-			return $this->owner->project404Response();
+			return $this->project404Response();
 		}
 
 		// Performs canView permission check by limiting visible projects
-		$env = $this->owner->getCurrentEnvironment($project);
+		$env = $this->getCurrentEnvironment($project);
 		if(!$env) {
-			return $this->owner->environment404Response();
+			return $this->environment404Response();
 		}
 
 		$data = json_decode($request->postVar('variables'), true);
