@@ -30,10 +30,19 @@ var VariableEditor = React.createClass({
 
 		this.setState({saving: true});
 
+		// Sort the variables by key.
+		var newModel = Tools.deepCopyModel(this.state.model);
+		newModel.sort(function(left, right) {
+			if (left.variable<right.variable) return -1;
+			if (left.variable>right.variable) return 1;
+			return 0;
+		});
+
+		// Convert the data back into associative array expected by the backend.
 		var assocArray = {};
-		for (var i=0; i<this.state.model.length; i++) {
-			if (!this.state.model[i].deleted) {
-				assocArray[this.state.model[i].variable] = this.state.model[i].value;
+		for (var i=0; i<newModel.length; i++) {
+			if (!newModel[i].deleted) {
+				assocArray[newModel[i].variable] = newModel[i].value;
 			}
 		}
 
@@ -46,7 +55,7 @@ var VariableEditor = React.createClass({
 			}
 		}))
 			.then(function() {
-				self.props.editingSuccessful(Tools.deepCopyModel(self.state.model));
+				self.props.editingSuccessful(newModel);
 			}, function(data){
 				self.setState({
 					saving: false,
