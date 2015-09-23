@@ -5,9 +5,11 @@
 
 namespace EnvironmentConfig;
 
-class Dispatcher extends \DNRoot {
+class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	const ACTION_CONFIGURATION = 'configuration';
+
+	const DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE = 'DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE';
 
 	public static $allowed_actions = array(
 		'save'
@@ -16,6 +18,13 @@ class Dispatcher extends \DNRoot {
 	private static $action_types = array(
 		self::ACTION_CONFIGURATION
 	);
+
+	public function init() {
+		parent::init();
+		if(!\Permission::check(self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE)) {
+			return \Security::permissionFailure();
+		}
+	}
 
 	/**
 	 * Render configuration form.
@@ -83,4 +92,12 @@ class Dispatcher extends \DNRoot {
 		$env->getEnvironmentConfigBackend()->setVariables($data);
 	}
 
+	public function providePermissions() {
+		return array(
+			self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE => array(
+				'name' => "Write access to environment configuration",
+				'category' => "Deploynaut",
+			)
+		);
+	}
 }
