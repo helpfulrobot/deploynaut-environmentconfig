@@ -17,7 +17,7 @@ module.exports = {
 	deepCopyModel: function(from) {
 		var to = [];
 		for (var i=0; i<from.length; i++) {
-			if (!from[i].deleted) {
+			if (!from[i].deleted && !from[i].vacant) {
 				to[i] = {
 					variable: from[i].variable,
 					value: from[i].value
