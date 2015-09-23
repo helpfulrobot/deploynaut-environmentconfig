@@ -3,8 +3,8 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var sass = require('gulp-sass');
-var react = require('gulp-react');
 var gutil = require('gulp-util');
+var uglify = require('gulp-uglify');
 
 var path = {
 	JS: 'js/*.js*',
@@ -17,6 +17,8 @@ var onError = function (err) {
 	console.log(err);
 };
 
+// Dedicated task for debug - propagating maps from reactify via sourcemaps+uglify
+// prevented the ability to debug local scope variables.
 gulp.task('js-debug', function() {
 	browserify('js/base.jsx', {debug: true})
 		.transform('reactify')
@@ -36,7 +38,9 @@ gulp.task('js', function() {
 		.bundle()
 		.on('error', onError)
 		.pipe(source('bundle.js'))
-		// Use unminified source on prod - they will get gzipped anyway.
+		// We need to buffer the output, otherwise uglify will balk at the stream input.
+		.pipe(buffer())
+		.pipe(uglify())
 		.pipe(gulp.dest(path.DEST));
 });
 

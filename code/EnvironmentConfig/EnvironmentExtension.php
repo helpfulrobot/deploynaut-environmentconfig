@@ -32,7 +32,7 @@ class EnvironmentExtension extends \DataExtension {
 	 * Add the "configuration" menu item to the environment screen.
 	 */
 	public function updateMenu($list) {
-		if (!$this->owner->config()->supports_environment_config) return;
+		if (!$this->owner->Backend()->config()->supports_environment_config) return;
 
 		$controller = \Controller::curr();
 		$actionType = $controller->getField('CurrentActionType');

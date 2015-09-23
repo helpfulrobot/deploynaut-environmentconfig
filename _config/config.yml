@@ -1,14 +1,11 @@
 ---
 Name: deploynaut-environmentconfig
 After:
-  - '#deploynaut'
+  - '#deploynautroutes'
 ---
 DNEnvironment:
   extensions:
     - 'EnvironmentConfig\EnvironmentExtension'
-DNRoot:
-  extensions:
-    - 'EnvironmentConfig\Dispatcher'
-  url_handlers:
-    'project/$Project/environment/$Environment/configuration': 'configuration'
-    'project/$Project/environment/$Environment/configuration_save': 'save'
+Director:
+  rules:
+    'naut/project/$Project/environment/$Environment/configuration': 'EnvironmentConfig\Dispatcher',

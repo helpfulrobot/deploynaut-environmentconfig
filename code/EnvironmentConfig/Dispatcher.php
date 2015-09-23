@@ -5,14 +5,13 @@
 
 namespace EnvironmentConfig;
 
-class Dispatcher extends \Extension {
-
-	public static $allowed_actions = array(
-		'configuration',
-		'save'
-	);
+class Dispatcher extends \DNRoot {
 
 	const ACTION_CONFIGURATION = 'configuration';
+
+	public static $allowed_actions = array(
+		'save'
+	);
 
 	private static $action_types = array(
 		self::ACTION_CONFIGURATION
@@ -21,17 +20,17 @@ class Dispatcher extends \Extension {
 	/**
 	 * Render configuration form.
 	 */
-	public function configuration() {
-		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
+	public function index(SS_HTTPRequest $request) {
+		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
-		$project = $this->owner->getCurrentProject();
+		$project = $this->getCurrentProject();
 		if(!$project) {
 			return $this->project404Response();
 		}
 
 		// Performs canView permission check by limiting visible projects
-		$env = $this->owner->getCurrentEnvironment($project);
+		$env = $this->getCurrentEnvironment($project);
 		if(!$env) {
 			return $this->environment404Response();
 		}
@@ -44,30 +43,43 @@ class Dispatcher extends \Extension {
 
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
-		return $this->owner->render(array(
-			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables()))
-		));
+		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
+		return $this->customise(array(
+			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables())),
+			'Blacklist' => htmlentities(json_encode($blacklist))
+		))->renderWith(array('EnvironmentConfig_configuration', 'DNRoot'));
 	}
 
 	/**
 	 * Store new version of variables.
 	 */
-	public function save($request) {
-		$this->owner->setCurrentActionType(self::ACTION_CONFIGURATION);
+	public function save(SS_HTTPRequest $request) {
+		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
-		$project = $this->owner->getCurrentProject();
+		$project = $this->getCurrentProject();
 		if(!$project) {
 			return $this->project404Response();
 		}
 
 		// Performs canView permission check by limiting visible projects
-		$env = $this->owner->getCurrentEnvironment($project);
+		$env = $this->getCurrentEnvironment($project);
 		if(!$env) {
 			return $this->environment404Response();
 		}
 
 		$data = json_decode($request->postVar('variables'), true);
+
+		// Validate against unsafe inputs.
+		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
+		if (!empty($blacklist)) foreach ($data as $variable => $value) {
+			foreach ($blacklist as $filter) {
+				if (preg_match("/$filter/", $variable)) {
+					return new \SS_HTTPResponse(sprintf('Variable %s is blacklisted.', $variable), 403);
+				}
+			}
+		}
+
 		$env->getEnvironmentConfigBackend()->setVariables($data);
 	}
 
