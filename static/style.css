@@ -1,29 +1,34 @@
-.variables .bottom-actions button, .variables .bottom-actions span, .variables .bottom-actions input {
-  margin-left: 10px;
+.variables .variables-actions {
   float: right; }
+  .variables .variables-actions button, .variables .variables-actions span, .variables .variables-actions input {
+    margin-left: 10px;
+    float: right;
+    margin-bottom: 5px; }
 
-.variables th.variable {
-  width: 200px; }
+.variables .alert {
+  float: left;
+  width: 75%; }
 
-.variables th.actions {
-  width: 100px; }
+.variables th.variable, .variables td.variable {
+  width: 30%; }
+
+.variables th.actions, .variables td.actions {
+  width: 30px; }
 
 .variables tr button {
-  margin: 0px; }
+  margin: 0px;
+  padding-top: 3px; }
 
 .variables tr input {
   width: 100%;
   height: 26px;
-  padding: 0;
-  margin: 1px;
-  line-height: 20px; }
+  padding: 3px 6px;
+  margin: 1px 1px 0 1px;
+  line-height: 19px;
+  border: 1px solid #ddd; }
 
 .variables td button {
   margin-top: 2px; }
 
 .variables .variable-table td {
-  padding: 16px;
-  padding-left: 14px; }
-
-.variables .variable-table-actions {
-  margin-top: 73px; }
+  padding: 16px 16px 16px 18px; }

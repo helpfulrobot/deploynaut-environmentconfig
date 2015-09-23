@@ -28,7 +28,10 @@ var VariableEditor = React.createClass({
 		event.stopPropagation();
 		event.preventDefault();
 
-		this.setState({saving: true});
+		this.setState({
+			saving: true,
+			message: ""
+		});
 
 		// Sort the variables by key.
 		var newModel = Tools.deepCopyModel(this.state.model);
@@ -181,6 +184,11 @@ var VariableEditor = React.createClass({
 
 		return (
 			<form className="variable-editor" onSubmit={this.save} >
+				<VariableEditorActions
+					context={this.props.context}
+					disabled={!this.state.valid}
+					saving={this.state.saving}
+					cancel={this.props.editingCancelled} />
 				{message}
 				<table className="table table-striped">
 					<thead>
@@ -193,11 +201,6 @@ var VariableEditor = React.createClass({
 						{rows}
 					</tbody>
 				</table>
-				<VariableEditorActions
-					context={this.props.context}
-					disabled={!this.state.valid}
-					saving={this.state.saving}
-					cancel={this.props.editingCancelled} />
 			</form>
 		);
 	}
@@ -205,20 +208,18 @@ var VariableEditor = React.createClass({
 
 var VariableEditorActions = React.createClass({
 	render: function() {
-		if (!this.props.saving) {
-			return (
-				<div className="bottom-actions variable-editor-actions">
-					<input type="submit" disabled={this.props.disabled} className="btn btn-primary" value="Save" />
-					<button type="button" className="btn btn-default" onClick={this.props.cancel}>Cancel</button>
-				</div>
-			);
+		if (this.props.saving) {
+			var buttonText = "Saving..."
 		} else {
-			return (
-				<div className="bottom-actions variable-editor-actions">
-					<span>Saving...</span>
-				</div>
-			);
+			var buttonText = "Save";
 		}
+
+		return (
+			<div className="variables-actions variable-editor-actions">
+				<input type="submit" disabled={this.props.disabled || this.props.saving} className="btn btn-primary" value={buttonText} />
+				<button type="button" className="btn btn-default" disabled={this.props.disabled || this.props.saving} onClick={this.props.cancel}>Cancel</button>
+			</div>
+		);
 	}
 });
 
@@ -238,21 +239,23 @@ var VariableEditorRow = React.createClass({
 
 	render: function() {
 		var remove = null;
-		if (!this.props.rowState.isVacant()) {
+		if (!this.props.rowState.isVacant() && !this.props.disabled) {
 			remove = (
-					<button type="button" className="btn btn-danger btn-xs" onClick={this.props.rowState.remove} disabled={this.props.disabled}>Remove</button>
+					<button type="button" className="btn btn-danger btn-xs" onClick={this.props.rowState.remove} disabled={this.props.disabled}>
+						<span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
+					</button>
 			);
 		}
 		return (
 			<tr>
-				<td>
+				<td className="variable">
 					<ValidatableInput disabled={this.props.disabled} type="text" value={this.props.variable} onChange={this.handleVariableChange}
 						validate={this.validateVariable} onValidationFail={this.props.validationFail} onValidationSuccess={this.props.validationSuccess} />
 				</td>
-				<td>
+				<td className="value">
 					<input disabled={this.props.disabled} type="text" value={this.props.value} onChange={this.handleValueChange} />
 				</td>
-				<td>
+				<td className="actions">
 					{remove}
 				</td>
 			</tr>

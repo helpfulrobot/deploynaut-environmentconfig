@@ -19,6 +19,9 @@ var VariableTable = React.createClass({
 
 		return (
 			<div>
+				<div className="variables-actions variable-table-actions">
+					<button type="button" className="btn btn-primary" onClick={this.props.startEditing}>Edit</button>
+				</div>
 				<table className="variable-table table table-striped">
 					<thead>
 						<tr>
@@ -30,9 +33,6 @@ var VariableTable = React.createClass({
 						{rows}
 					</tbody>
 				</table>
-				<div className="bottom-actions variable-table-actions">
-					<button type="button" className="btn btn-primary" onClick={this.props.startEditing}>Edit</button>
-				</div>
 			</div>
 		);
 	}
