@@ -38,6 +38,13 @@ interface Backend {
 	public function diffVariables($shaFrom, $shaTo = null);
 
 	/**
+	 * Create a new configuration version from the array.
+	 *
+	 * @param array $array Deep associative array to replace the current configuraiton.
+	 */
+	public function setArray($array);
+
+	/**
 	 * Return the canonical data for the SHA. This data must produce the SHA after applying sha1.
 	 *
 	 * @param string $sha

@@ -78,6 +78,10 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 		return $diff;
 	}
 
+	public function setArray($array) {
+		return $this->writeVersionFromArray($array);
+	}
+
 	public function getYaml($sha = null) {
 		if (!$sha) return $this->Data;
 		return $this->getVersionData($sha);
