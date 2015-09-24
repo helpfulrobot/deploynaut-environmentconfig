@@ -17,11 +17,11 @@ module.exports = {
 	deepCopyModel: function(from) {
 		var to = [];
 		for (var i=0; i<from.length; i++) {
-			if (!from[i].deleted) {
-				to[i] = {
+			if (!from[i].deleted && !from[i].vacant) {
+				to.push({
 					variable: from[i].variable,
 					value: from[i].value
-				}
+				});
 			}
 		}
 

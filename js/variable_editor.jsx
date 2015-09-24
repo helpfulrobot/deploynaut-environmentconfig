@@ -8,9 +8,27 @@ var _ = require('underscore');
  */
 var VariableEditor = React.createClass({
 	getInitialState: function() {
+
+		var model = Tools.deepCopyModel(this.props.model);
+
+		// Add additional state needed for editing.
+		for (var i=0; i<model.length; i++) {
+			model[i].error = "";
+			model[i].vacant = false;
+			model[i].deleted = false;
+		}
+
+		model.push({
+			variable: "",
+			value: "",
+			error: "",
+			vacant: true,
+			deleted: false
+		});
+
 		return {
 			saving: false,
-			model: this.props.model,
+			model: model,
 			valid: true,
 			message: ""
 		};
@@ -20,12 +38,24 @@ var VariableEditor = React.createClass({
 		event.stopPropagation();
 		event.preventDefault();
 
-		this.setState({saving: true});
+		this.setState({
+			saving: true,
+			message: ""
+		});
 
+		// Sort the variables by key.
+		var newModel = Tools.deepCopyModel(this.state.model);
+		newModel.sort(function(left, right) {
+			if (left.variable<right.variable) return -1;
+			if (left.variable>right.variable) return 1;
+			return 0;
+		});
+
+		// Convert the data back into associative array expected by the backend.
 		var assocArray = {};
-		for (var i=0; i<this.state.model.length; i++) {
-			if (!this.state.model[i].deleted) {
-				assocArray[this.state.model[i].variable] = this.state.model[i].value;
+		for (var i=0; i<newModel.length; i++) {
+			if (!newModel[i].deleted) {
+				assocArray[newModel[i].variable] = newModel[i].value;
 			}
 		}
 
@@ -38,7 +68,7 @@ var VariableEditor = React.createClass({
 			}
 		}))
 			.then(function() {
-				self.props.editingSuccessful(Tools.deepCopyModel(self.state.model));
+				self.props.editingSuccessful(newModel);
 			}, function(data){
 				self.setState({
 					saving: false,
@@ -57,15 +87,6 @@ var VariableEditor = React.createClass({
 	rowStateProxy: function(row) {
 		var self = this;
 
-		var checkNewNeeded = function() {
-			if (row>=self.state.model.length) {
-				self.state.model.push({
-					variable: '',
-					value: ''
-				});
-			}
-		};
-
 		var updateState = function() {
 			self.setState({model: self.state.model});
 		};
@@ -81,21 +102,28 @@ var VariableEditor = React.createClass({
 		};
 
 		return ({
+			isVacant: function() {
+				return (typeof self.state.model[row].vacant!=='undefined' && self.state.model[row].vacant);
+			},
 			setVariable: function(variable) {
-				checkNewNeeded();
+				if (self.state.model[row].vacant) {
+					self.state.model.push({
+						variable: "",
+						value: "",
+						vacant: true
+					});
+				}
+
 				self.state.model[row].variable = variable;
+				self.state.model[row].vacant = false;
 				updateState();
 			},
 			setValue: function(value) {
-				checkNewNeeded();
 				self.state.model[row].value = value;
 				updateState();
 			},
-			// Create a new item in the model.
 			add: function(variable, value) {
-				checkNewNeeded();
-				self.state.model[row].variable = variable;
-				self.state.model[row].value = value;
+
 				updateState();
 			},
 			remove: function() {
@@ -103,34 +131,50 @@ var VariableEditor = React.createClass({
 				updateState();
 			},
 			validateVariable: function(value) {
+				var message = "";
 				if (trim(value)==="") {
-					return "Variable cannot be empty.";
+					message = "Variable cannot be empty.";
 				}
 				if (value.match(/[^a-zA-Z_0-9]/)) {
-					return "Only alphanumerics and underscore permitted.";
+					message = "Only alphanumerics and underscore permitted.";
+				}
+				if (value.match(/^[0-9]/)) {
+					message = "Variable cannot start with a digit.";
 				}
 				if (!isVariableUnique(value)) {
-					return "Variable already exists.";
+					message =  "Variable already exists.";
 				}
 				if (self.props.blacklist) {
 					for (var i=0; i<self.props.blacklist.length; i++) {
 						var re = new RegExp(self.props.blacklist[i]);
-						if (value.match(re)) return "Variable is not allowed.";
+						if (value.match(re)) {
+							message = "Variable is not allowed.";
+							break;
+						}
 					}
 				}
+
+				self.state.model[row].error = message ? true : false;
+				updateState();
+
+				return message;
 			}
 		});
 	},
 
-	handleValidationFail: function() {
-		this.setState({valid: false});
-	},
+	isFormValid: function() {
+		for (var i=0; i<this.state.model.length; i++) {
+			if (!this.state.model[i].vacant
+					&& !this.state.model[i].deleted
+					&& this.state.model[i].error) return false;
+		}
 
-	handleValidationSuccess: function() {
-		this.setState({valid: true});
+		return true;
 	},
 
 	render: function() {
+		var formValid = this.isFormValid();
+
 		var self = this;
 		var i = 0;
 		var rows = _.map(this.state.model, function(item) {
@@ -145,12 +189,8 @@ var VariableEditor = React.createClass({
 						disabled={self.state.saving}
 						variable={item.variable}
 						value={item.value}
-						validationFail={self.handleValidationFail}
-						validationSuccess={self.handleValidationSuccess}
 						rowState={self.rowStateProxy(i)} />
 				);
-			} else {
-				<tr></tr>
 			}
 			i++;
 			return row;
@@ -165,6 +205,11 @@ var VariableEditor = React.createClass({
 
 		return (
 			<form className="variable-editor" onSubmit={this.save} >
+				<VariableEditorActions
+					context={this.props.context}
+					disabled={!formValid}
+					saving={this.state.saving}
+					cancel={this.props.editingCancelled} />
 				{message}
 				<table className="table table-striped">
 					<thead>
@@ -175,16 +220,8 @@ var VariableEditor = React.createClass({
 					</thead>
 					<tbody>
 						{rows}
-						<VariableEditorNew
-							disabled={self.state.saving}
-							rowState={self.rowStateProxy(i)} />
 					</tbody>
 				</table>
-				<VariableEditorActions
-					context={this.props.context}
-					disabled={!this.state.valid}
-					saving={this.state.saving}
-					cancel={this.props.editingCancelled} />
 			</form>
 		);
 	}
@@ -192,20 +229,18 @@ var VariableEditor = React.createClass({
 
 var VariableEditorActions = React.createClass({
 	render: function() {
-		if (!this.props.saving) {
-			return (
-				<div className="bottom-actions variable-editor-actions">
-					<input type="submit" disabled={this.props.disabled} className="btn btn-primary" value="Save" />
-					<button type="button" className="btn btn-default" onClick={this.props.cancel}>Cancel</button>
-				</div>
-			);
+		if (this.props.saving) {
+			var buttonText = "Saving..."
 		} else {
-			return (
-				<div className="bottom-actions variable-editor-actions">
-					<span>Saving...</span>
-				</div>
-			);
+			var buttonText = "Save";
 		}
+
+		return (
+			<div className="variables-actions variable-editor-actions">
+				<input type="submit" disabled={this.props.disabled || this.props.saving} className="btn btn-primary" value={buttonText} />
+				<button type="button" className="btn btn-default" disabled={this.props.disabled || this.props.saving} onClick={this.props.cancel}>Cancel</button>
+			</div>
+		);
 	}
 });
 
@@ -219,75 +254,26 @@ var VariableEditorRow = React.createClass({
 		this.props.rowState.setValue(event.target.value);
 	},
 
-	validateVariable: function(value) {
-		return this.props.rowState.validateVariable(value);
-	},
-
 	render: function() {
+		var remove = null;
+		if (!this.props.rowState.isVacant() && !this.props.disabled) {
+			remove = (
+					<button type="button" className="btn btn-danger btn-xs" onClick={this.props.rowState.remove} disabled={this.props.disabled}>
+						<span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
+					</button>
+			);
+		}
 		return (
 			<tr>
-				<td>
+				<td className="variable">
 					<ValidatableInput disabled={this.props.disabled} type="text" value={this.props.variable} onChange={this.handleVariableChange}
-						validate={this.validateVariable} onValidationFail={this.props.validationFail} onValidationSuccess={this.props.validationSuccess} />
+						onValidate={this.props.rowState.validateVariable} />
 				</td>
-				<td>
+				<td className="value">
 					<input disabled={this.props.disabled} type="text" value={this.props.value} onChange={this.handleValueChange} />
 				</td>
-				<td>
-					<button type="button" className="btn btn-danger btn-xs" onClick={this.props.rowState.remove} disabled={this.props.disabled}>Remove</button>
-				</td>
-			</tr>
-		);
-	}
-});
-
-var VariableEditorNew = React.createClass({
-
-	getInitialState: function() {
-		return {
-			variable: "",
-			value: "",
-			valid: false
-		};
-	},
-
-	handleVariableChange: function(event) {
-		this.setState({variable: event.target.value});
-	},
-
-	handleValueChange: function(event) {
-		this.setState({value: event.target.value});
-	},
-
-	handleAdd: function() {
-		this.props.rowState.add(this.state.variable, this.state.value);
-		this.setState(this.getInitialState());
-	},
-
-	handleValidationFail: function() {
-		this.setState({valid: false});
-	},
-
-	handleValidationSuccess: function() {
-		this.setState({valid: true});
-	},
-
-	validateVariable: function(value) {
-		return this.props.rowState.validateVariable(value);
-	},
-
-	render: function() {
-		return (
-			<tr>
-				<td>
-					<ValidatableInput disabled={this.props.disabled} type="text" onChange={this.handleVariableChange} value={this.state.variable}
-						validate={this.validateVariable} onValidationFail={this.handleValidationFail} onValidationSuccess={this.handleValidationSuccess} />
-				</td>
-				<td>
-					<input disabled={this.props.disabled} type="text" onChange={this.handleValueChange} value={this.state.value} />
-				</td>
-				<td>
-					<button disabled={this.props.disabled || !this.state.valid} type="button" className="btn btn-success btn-xs" onClick={this.handleAdd}>Add</button>
+				<td className="actions">
+					{remove}
 				</td>
 			</tr>
 		);
@@ -305,35 +291,17 @@ var ValidatableInput = React.createClass({
 		};
 	},
 
-	update: function(value) {
-		var message = this.props.validate(value);
-		this.setState({message: message});
-		if (!message) {
-			this.props.onValidationSuccess();
-		} else {
-			this.props.onValidationFail();
-		}
-	},
-
 	handleChange: function(event) {
-		this.update(event.target.value);
-		if (this.props.onChange) {
-			this.props.onChange(event);
-		}
-	},
-
-	handleBlur: function(event) {
-		this.update(event.target.value);
-		if (this.props.onBlur) {
-			this.props.onBlur(event)
-		}
+		var message = this.props.onValidate(event.target.value);
+		this.setState({message: message});
+		if (this.props.onChange) this.props.onChange(event);
 	},
 
 	render: function() {
 		return (
 			<div>
 				<input disabled={this.props.disabled} type={this.props.type} onChange={this.handleChange}
-					onBlur={this.handleBlur} value={this.props.value} defaultValue={this.props.defaultValue} />
+					value={this.props.value} />
 				<small className="error">{this.state.message}</small>
 			</div>
 		);
