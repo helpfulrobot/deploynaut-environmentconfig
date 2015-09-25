@@ -16,7 +16,7 @@
 	<p>
 		Configure your environment-specific variables here. For the variables to be available to your site code,
 		a full deployment needs to be made. You will then be able to access them as PHP constants, just like you
-		would <a href="https://docs.silverstripe.org/en/3.1/getting_started/environment_management/">other SilverStripe
+		would <a href="https://docs.silverstripe.org/en/getting_started/environment_management/">other SilverStripe
 		constants</a>.
 	</p>
 
