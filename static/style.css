@@ -1,3 +1,6 @@
+.variables-description p {
+  max-width: 500px; }
+
 .variables .variables-actions {
   float: right; }
   .variables .variables-actions button, .variables .variables-actions span, .variables .variables-actions input {
@@ -9,12 +12,11 @@
   float: left;
   width: 75%; }
 
-.variables th, .variables td {
-  border-bottom: 1px solid #f0f0f0; }
-  .variables th.variable, .variables td.variable {
-    width: 30%; }
-  .variables th.actions, .variables td.actions {
-    width: 30px; }
+.variables th.variable, .variables td.variable {
+  width: 30%; }
+
+.variables th.actions, .variables td.actions {
+  width: 30px; }
 
 .variables tr button {
   margin: 0px;

@@ -13,12 +13,17 @@
 
 	<h3>Environment variables</h3>
 
-	<p>
-		Configure your environment-specific variables here. For the variables to be available to your site code,
-		a full deployment needs to be made. You will then be able to access them as PHP constants, just like you
-		would <a href="https://docs.silverstripe.org/en/getting_started/environment_management/">other SilverStripe
-		constants</a>.
-	</p>
+	<div class="variables-description">
+		<p>
+			Configure your environment-specific variables here. You will be able to access them as PHP constants,
+			just like you would <a href="https://docs.silverstripe.org/en/getting_started/environment_management/">
+			other SilverStripe constants</a>.
+		</p>
+
+		<p>
+			Note: after making changes to these variables, please perform a deployment to make them available on your site.
+		</p>
+	</div>
 
 	<div class="variables" id="environmentconfig-variables-holder"></div>
 
