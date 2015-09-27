@@ -21,7 +21,18 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	public function init() {
 		parent::init();
-		if(!\Permission::check(self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE)) {
+
+		$project = $this->getCurrentProject();
+		if(!$project) {
+			return $this->project404Response();
+		}
+
+		$env = $this->getCurrentEnvironment($project);
+		if(!$env) {
+			return $this->environment404Response();
+		}
+
+		if(!$env->allowed(self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE)) {
 			return \Security::permissionFailure();
 		}
 	}
