@@ -9,7 +9,8 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	const ACTION_CONFIGURATION = 'configuration';
 
-	const DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE = 'DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE';
+	const ALLOW_ENVIRONMENT_CONFIG_READ = 'ALLOW_ENVIRONMENT_CONFIG_READ';
+	const ALLOW_ENVIRONMENT_CONFIG_WRITE = 'ALLOW_ENVIRONMENT_CONFIG_WRITE';
 
 	public static $allowed_actions = array(
 		'save'
@@ -27,12 +28,7 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			return $this->project404Response();
 		}
 
-		$env = $this->getCurrentEnvironment($project);
-		if(!$env) {
-			return $this->environment404Response();
-		}
-
-		if(!$env->allowed(self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE)) {
+		if(!$project->allowed(self::ALLOW_ENVIRONMENT_CONFIG_READ)) {
 			return \Security::permissionFailure();
 		}
 	}
@@ -82,6 +78,10 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			return $this->project404Response();
 		}
 
+		if(!$project->allowed(self::ALLOW_ENVIRONMENT_CONFIG_WRITE)) {
+			return \Security::permissionFailure();
+		}
+
 		// Performs canView permission check by limiting visible projects
 		$env = $this->getCurrentEnvironment($project);
 		if(!$env) {
@@ -105,7 +105,11 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	public function providePermissions() {
 		return array(
-			self::DEPLOYNAUT_ENVIRONMENT_CONFIG_WRITE => array(
+			self::ALLOW_ENVIRONMENT_CONFIG_READ => array(
+				'name' => "Read access to environment configuration",
+				'category' => "Deploynaut",
+			),
+			self::ALLOW_ENVIRONMENT_CONFIG_WRITE => array(
 				'name' => "Write access to environment configuration",
 				'category' => "Deploynaut",
 			)
