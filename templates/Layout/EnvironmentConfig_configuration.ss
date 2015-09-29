@@ -27,6 +27,13 @@
 
 	<div class="variables" id="environmentconfig-variables-holder"></div>
 
+	<div class="variables-description small"><p><i>
+		Note: These environment values will be readable by
+		<% if $AllowedToRead %><% loop $AllowedToRead %>$Name, <% end_loop %><% end_if %>
+		SilverStripe Ops, and the servers in the $Environment.Name environment. They are stored in plaintext on the
+		Platform Dashboard server.
+	</i></p></div>
+
 	<script id="environmentconfig-variables-model" type="application/json">
 		$Variables
 	</script>
