@@ -62,7 +62,9 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
 		return $this->customise(array(
 			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables())),
-			'Blacklist' => htmlentities(json_encode($blacklist))
+			'Blacklist' => htmlentities(json_encode($blacklist)),
+			'AllowedToRead' => $project->whoIsAllowed(self::ALLOW_ENVIRONMENT_CONFIG_READ),
+			'Environment' => $env
 		))->renderWith(array('EnvironmentConfig_configuration', 'DNRoot'));
 	}
 
