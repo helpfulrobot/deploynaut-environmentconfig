@@ -122,10 +122,6 @@ var VariableEditor = React.createClass({
 				self.state.model[row].value = value;
 				updateState();
 			},
-			add: function(variable, value) {
-
-				updateState();
-			},
 			remove: function() {
 				self.state.model[row].deleted = true;
 				updateState();
@@ -229,10 +225,11 @@ var VariableEditor = React.createClass({
 
 var VariableEditorActions = React.createClass({
 	render: function() {
+		var buttonText = "";
 		if (this.props.saving) {
-			var buttonText = "Saving..."
+			buttonText = "Saving..."
 		} else {
-			var buttonText = "Save";
+			buttonText = "Save";
 		}
 
 		return (
