@@ -225,10 +225,11 @@ var VariableEditor = React.createClass({
 
 var VariableEditorActions = React.createClass({
 	render: function() {
+		var buttonText = "";
 		if (this.props.saving) {
-			var buttonText = "Saving..."
+			buttonText = "Saving..."
 		} else {
-			var buttonText = "Save";
+			buttonText = "Save";
 		}
 
 		return (
