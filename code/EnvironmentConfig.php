@@ -144,7 +144,7 @@ class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend
 			}
 		}
 
-		if ($v) {
+		if (isset($v) && $v) {
 			return $v->Data;
 		}
 
