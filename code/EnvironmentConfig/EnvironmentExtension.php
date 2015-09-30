@@ -12,10 +12,16 @@ namespace EnvironmentConfig;
 
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * Class EnvironmentExtension
+ *
+ */
 class EnvironmentExtension extends \DataExtension {
 
 	/**
 	 * Surface all configuration data to the admin area.
+	 *
+	 * @param \FieldList $fields
 	 */
 	public function updateCMSFields(\FieldList $fields) {
 		if (!$this->owner->Backend()->config()->supports_environment_config) return;
@@ -30,7 +36,7 @@ class EnvironmentExtension extends \DataExtension {
 	}
 
 	/**
-	 * Valildate.
+	 * Validate.
 	 */
 	public function onBeforeWrite() {
 		try {
@@ -71,8 +77,10 @@ class EnvironmentExtension extends \DataExtension {
 
 	/**
 	 * Add the "configuration" menu item to the environment screen.
+	 *
+	 * @param \ArrayList $list
 	 */
-	public function updateMenu($list) {
+	public function updateMenu(\ArrayList $list) {
 		if (!$this->owner->Backend()->config()->supports_environment_config) return;
 		if(!$this->owner->Project()->allowed(Dispatcher::ALLOW_ENVIRONMENT_CONFIG_READ)) return;
 

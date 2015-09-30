@@ -35,8 +35,12 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	/**
 	 * Render configuration form.
+	 *
+	 * @param \SS_HTTPRequest $request
+	 *
+	 * @return \HTMLText|\SS_HTTPResponse
 	 */
-	public function index(SS_HTTPRequest $request) {
+	public function index(\SS_HTTPRequest $request) {
 		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
@@ -70,8 +74,12 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 	/**
 	 * Store new version of variables.
+	 *
+	 * @param \SS_HTTPRequest $request
+	 *
+	 * @return \SS_HTTPResponse|void
 	 */
-	public function save(SS_HTTPRequest $request) {
+	public function save(\SS_HTTPRequest $request) {
 		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
 
 		// Performs canView permission check by limiting visible projects
