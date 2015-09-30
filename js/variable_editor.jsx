@@ -122,10 +122,6 @@ var VariableEditor = React.createClass({
 				self.state.model[row].value = value;
 				updateState();
 			},
-			add: function(variable, value) {
-
-				updateState();
-			},
 			remove: function() {
 				self.state.model[row].deleted = true;
 				updateState();
