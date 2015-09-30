@@ -7,7 +7,6 @@ var _ = require('underscore');
 var VariableTable = React.createClass({
 
 	render: function() {
-		var self = this;
 		var rows = _.map(this.props.model, function(item) {
 			return (
 				<VariableTableRow
