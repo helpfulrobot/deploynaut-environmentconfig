@@ -256,7 +256,7 @@ var VariableEditorRow = React.createClass({
 		if (!this.props.rowState.isVacant() && !this.props.disabled) {
 			remove = (
 					<button type="button" className="btn btn-danger btn-xs" onClick={this.props.rowState.remove} disabled={this.props.disabled}>
-						<span className="glyphicon glyphicon-remove" aria-hidden="true"></span>
+						<span className="fa fa-times" aria-hidden="true"></span>
 					</button>
 			);
 		}
