@@ -1,12 +1,14 @@
 <?php
 /**
- * EnvironmentConfig stores configurations in the SilverStripe's database,
+ * EnvironmentConfig\Config stores configurations in the SilverStripe's database,
  * and versions them using Versioned API. Versions are keyed by SHA.
  */
 
+namespace EnvironmentConfig;
+
 use Symfony\Component\Yaml\Yaml;
 
-class EnvironmentConfig extends DataObject implements \EnvironmentConfig\Backend {
+class Config extends \DataObject implements \EnvironmentConfig\Backend {
 
 	private static $db = array(
 		'SHA' => 'Varchar',

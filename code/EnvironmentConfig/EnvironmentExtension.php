@@ -62,12 +62,12 @@ class EnvironmentExtension extends \DataExtension {
 	 */
 	public function getEnvironmentConfigBackend() {
 		// It just so happens the concrete implementation of the backend is based on the DataObjects.
-		$config = \EnvironmentConfig::get()->filter('EnvironmentID', $this->owner->ID)->first();
+		$config = \DataObject::get('EnvironmentConfig\Config')->filter('EnvironmentID', $this->owner->ID)->first();
 
 		// We need to create the initial implementation of the backend somewhere,
 		// there doesn't seem to be a better place to do it.
 		if (!$config || !$config->ID) {
-			$config = new \EnvironmentConfig();
+			$config = new Config();
 			$config->EnvironmentID = $this->owner->ID;
 			$config->write();
 		}
