@@ -108,7 +108,7 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend {
 	 * @param array $array
 	 */
 	protected function writeVersionFromArray($array) {
-		$this->Data = Yaml::dump($array);
+		$this->Data = Yaml::dump($array, 5);
 		// Only write if the data differs.
 		if (sha1($this->Data)!==$this->SHA) $this->write();
 	}
