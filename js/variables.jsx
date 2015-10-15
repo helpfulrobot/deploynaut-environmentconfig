@@ -13,7 +13,8 @@ var Variables = React.createClass({
 	getInitialState: function() {
 		return {
 			editing: false,
-			model: Tools.modelToArray(this.props.model)
+			Variables: Tools.modelToArray(this.props.initialData.Variables),
+			SecurityID: this.props.initialData.InitialSecurityID
 		};
 	},
 
@@ -24,11 +25,12 @@ var Variables = React.createClass({
 		});
 	},
 
-	editingSuccessful: function(newModel, message) {
+	editingSuccessful: function(data) {
 		this.setState({
 			editing: false,
-			model: newModel,
-			message: message
+			Variables: Tools.modelToArray(data.Variables),
+			SecurityID: data.NewSecurityID,
+			message: data.Message
 		});
 	},
 
@@ -50,7 +52,7 @@ var Variables = React.createClass({
 			return (
 				<VariableTable
 					context={this.props.context}
-					model={this.state.model}
+					model={this.state.Variables}
 					startEditing={this.startEditing}
 					message={message}
 					/>
@@ -59,8 +61,9 @@ var Variables = React.createClass({
 			return (
 				<VariableEditor
 					context={this.props.context}
-					blacklist={this.props.blacklist}
-					model={this.state.model}
+					blacklist={this.props.initialData.Blacklist}
+					model={this.state.Variables}
+					securityId={this.state.SecurityID}
 					editingSuccessful={this.editingSuccessful}
 					editingCancelled={this.editingCancelled}
 					/>

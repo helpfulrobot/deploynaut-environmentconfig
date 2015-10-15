@@ -35,11 +35,7 @@
 	</i></p></div>
 
 	<script id="environmentconfig-variables-model" type="application/json">
-		$Variables
-	</script>
-
-	<script id="environmentconfig-variables-blacklist" type="application/json">
-		$Blacklist
+		$Model
 	</script>
 
 	<script>

@@ -63,13 +63,17 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
-		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
-		return $this->customise(array(
-			'Variables' => htmlentities(json_encode($env->getEnvironmentConfigBackend()->getVariables())),
-			'Blacklist' => htmlentities(json_encode($blacklist)),
+		$model = [
+			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(),
+			'Blacklist' => $env->Backend()->config()->environment_config_blacklist ?: array(),
+			'InitialSecurityID' => $this->getSecurityToken()->getValue()
+		];
+
+		return $this->customise([
+			'Model' => htmlentities(json_encode($model)),
 			'AllowedToRead' => $project->whoIsAllowed(self::ALLOW_ENVIRONMENT_CONFIG_READ),
 			'Environment' => $env
-		))->renderWith(array('EnvironmentConfig_configuration', 'DNRoot'));
+		])->renderWith(array('EnvironmentConfig_configuration', 'DNRoot'));
 	}
 
 	/**
@@ -81,6 +85,8 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 	 */
 	public function save(\SS_HTTPRequest $request) {
 		$this->setCurrentActionType(self::ACTION_CONFIGURATION);
+
+		$this->checkSecurityToken();
 
 		// Performs canView permission check by limiting visible projects
 		$project = $this->getCurrentProject();
@@ -98,7 +104,7 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			return $this->environment404Response();
 		}
 
-		$data = json_decode($request->postVar('variables'), true);
+		$data = json_decode($request->postVar('Variables'), true);
 
 		// Validate against unsafe inputs.
 		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
@@ -110,6 +116,7 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			}
 		}
 
+		// Coerce risky "false" value.
 		$message = null;
 		$changed = [];
 		foreach ($data as $variable => $value) {
@@ -138,10 +145,26 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 	}
 
 	public function asJSON($data) {
+		$securityToken = $this->getSecurityToken();
+		$securityToken->reset();
+		$data['NewSecurityID'] = $securityToken->getValue();
+
 		$response = $this->getResponse();
 		$response->addHeader('Content-Type', 'application/json');
 		$response->setBody(json_encode($data));
+		$response->setStatusCode(200);
 		return $response;
+	}
+
+	protected function getSecurityToken() {
+		return new \SecurityToken('EnvironmentConfigDispatcherSecurityID');
+	}
+
+	protected function checkSecurityToken() {
+		$securityToken = $this->getSecurityToken();
+		if(!$securityToken->check($this->request->postVar('SecurityID'))) {
+			$this->httpError(400, 'Invalid security token, try reloading the page.');
+		}
 	}
 
 	public function providePermissions() {
