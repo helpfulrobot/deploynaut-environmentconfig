@@ -110,7 +110,38 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			}
 		}
 
+		$message = null;
+		$changed = [];
+		foreach ($data as $variable => $value) {
+			if ($value==="false") {
+				$data[$variable] = '0';
+				$changed[] = $variable;
+			}
+		}
+		if (!empty($changed)) {
+			$message = sprintf(
+				'We have converted some of the values to "0" to avoid the ambiguity of "false" string '
+				. 'which resolves to true in PHP boolean context. '
+				. 'The following variable values have been changed: %s.',
+				implode(', ', $changed)
+			);
+		}
+
+		ksort($data);
+
 		$env->getEnvironmentConfigBackend()->setVariables($data);
+
+		return $this->asJSON([
+			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(),
+			'Message' => $message
+		]);
+	}
+
+	public function asJSON($data) {
+		$response = $this->getResponse();
+		$response->addHeader('Content-Type', 'application/json');
+		$response->setBody(json_encode($data));
+		return $response;
 	}
 
 	public function providePermissions() {

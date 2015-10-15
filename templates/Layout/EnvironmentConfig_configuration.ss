@@ -17,11 +17,11 @@
 		<p>
 			Configure your environment-specific variables here. You will be able to access them as PHP constants,
 			just like you would <a href="https://docs.silverstripe.org/en/getting_started/environment_management/">
-			other SilverStripe constants</a>.
+			other SilverStripe constants</a>. All variables and values are parsed as strings.
 		</p>
 
 		<p>
-			Note: after making changes to these variables, please perform a deployment to make them available on your site.
+			After making changes to these variables, please perform a deployment to make them available on your site.
 		</p>
 	</div>
 

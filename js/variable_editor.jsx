@@ -67,8 +67,10 @@ var VariableEditor = React.createClass({
 				variables: JSON.stringify(assocArray)
 			}
 		}))
-			.then(function() {
-				self.props.editingSuccessful(newModel);
+			.then(function(data) {
+				self.props.editingSuccessful(
+					Tools.modelToArray(data.Variables), data.Message
+				);
 			}, function(data){
 				self.setState({
 					saving: false,
@@ -210,8 +212,8 @@ var VariableEditor = React.createClass({
 				<table className="table table-striped">
 					<thead>
 						<tr>
-							<th className="variable">Variable</th>
-							<th className="value">Value</th>
+							<th className="variable">Variable <small>(string)</small></th>
+							<th className="value">Value <small>(string)</small></th>
 							<th className="actions">&nbsp;</th></tr>
 					</thead>
 					<tbody>

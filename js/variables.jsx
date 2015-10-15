@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var VariableTable = require('./variable_table.jsx');
 var VariableEditor = require('./variable_editor.jsx');
+var Tools = require('./tools.jsx');
 
 /**
  * Variables provides a UI for displaying and editing environment variables. The main state is held here,
@@ -10,31 +11,24 @@ var VariableEditor = require('./variable_editor.jsx');
 var Variables = React.createClass({
 
 	getInitialState: function() {
-		// Convert the assoc data to flat array.
-		var self = this;
-		var dataArray = _.map(_.keys(this.props.model), function(key) {
-			return {
-				variable: key,
-				value: self.props.model[key]
-			};
-		});
-
 		return {
 			editing: false,
-			model: dataArray
+			model: Tools.modelToArray(this.props.model)
 		};
 	},
 
 	startEditing: function() {
 		this.setState({
-			editing: true
+			editing: true,
+			message: ''
 		});
 	},
 
-	editingSuccessful: function(newModel) {
+	editingSuccessful: function(newModel, message) {
 		this.setState({
 			editing: false,
-			model: newModel
+			model: newModel,
+			message: message
 		});
 	},
 
@@ -46,11 +40,19 @@ var Variables = React.createClass({
 
 	render: function() {
 		if (!this.state.editing) {
+			var message = '';
+			if (this.state.message) {
+				message = (
+					<div className='alert alert-success' dangerouslySetInnerHTML={{__html:this.state.message}} />
+				);
+			}
+
 			return (
 				<VariableTable
 					context={this.props.context}
 					model={this.state.model}
 					startEditing={this.startEditing}
+					message={message}
 					/>
 			);
 		} else {
