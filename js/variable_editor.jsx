@@ -43,13 +43,8 @@ var VariableEditor = React.createClass({
 			message: ""
 		});
 
-		// Sort the variables by key.
+		// Deep copying also filters the model.
 		var newModel = Tools.deepCopyModel(this.state.model);
-		newModel.sort(function(left, right) {
-			if (left.variable<right.variable) return -1;
-			if (left.variable>right.variable) return 1;
-			return 0;
-		});
 
 		// Convert the data back into associative array expected by the backend.
 		var assocArray = {};
@@ -64,11 +59,12 @@ var VariableEditor = React.createClass({
 			type: "POST",
 			url: this.props.context.envUrl + '/configuration/save',
 			data: {
-				variables: JSON.stringify(assocArray)
+				Variables: JSON.stringify(assocArray),
+				SecurityID: this.props.securityId
 			}
 		}))
-			.then(function() {
-				self.props.editingSuccessful(newModel);
+			.then(function(data) {
+				self.props.editingSuccessful(data);
 			}, function(data){
 				self.setState({
 					saving: false,
@@ -95,6 +91,7 @@ var VariableEditor = React.createClass({
 			for (var i=0; i<self.state.model.length; i++) {
 				if (row!=i
 					&& !self.state.model[i].deleted
+					&& !self.state.model[i].vacant
 					&& self.state.model[i].variable===variable
 				) return false;
 			}
@@ -210,8 +207,8 @@ var VariableEditor = React.createClass({
 				<table className="table table-striped">
 					<thead>
 						<tr>
-							<th className="variable">Variable</th>
-							<th className="value">Value</th>
+							<th className="variable">Variable <small>(string)</small></th>
+							<th className="value">Value <small>(string)</small></th>
 							<th className="actions">&nbsp;</th></tr>
 					</thead>
 					<tbody>
@@ -267,7 +264,8 @@ var VariableEditorRow = React.createClass({
 						onValidate={this.props.rowState.validateVariable} />
 				</td>
 				<td className="value">
-					<input disabled={this.props.disabled} type="text" value={this.props.value} onChange={this.handleValueChange} />
+					<input disabled={this.props.disabled} className='form-control' type="text" value={this.props.value}
+						onChange={this.handleValueChange} />
 				</td>
 				<td className="actions">
 					{remove}
@@ -295,11 +293,17 @@ var ValidatableInput = React.createClass({
 	},
 
 	render: function() {
+		var className = 'form-control';
+		var alert = null;
+		if (this.state.message) {
+			alert = <div className='validation-message'>{this.state.message}</div>;
+			className += ' validation-error';
+		}
 		return (
-			<div>
-				<input disabled={this.props.disabled} type={this.props.type} onChange={this.handleChange}
-					value={this.props.value} />
-				<small className="error">{this.state.message}</small>
+			<div className="form-group">
+				<input disabled={this.props.disabled} className={className} type={this.props.type}
+					onChange={this.handleChange} value={this.props.value} />
+				{alert}
 			</div>
 		);
 	}

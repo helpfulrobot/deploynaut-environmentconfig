@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var VariableTable = require('./variable_table.jsx');
 var VariableEditor = require('./variable_editor.jsx');
+var Tools = require('./tools.jsx');
 
 /**
  * Variables provides a UI for displaying and editing environment variables. The main state is held here,
@@ -10,31 +11,26 @@ var VariableEditor = require('./variable_editor.jsx');
 var Variables = React.createClass({
 
 	getInitialState: function() {
-		// Convert the assoc data to flat array.
-		var self = this;
-		var dataArray = _.map(_.keys(this.props.model), function(key) {
-			return {
-				variable: key,
-				value: self.props.model[key]
-			};
-		});
-
 		return {
 			editing: false,
-			model: dataArray
+			Variables: Tools.modelToArray(this.props.initialData.Variables),
+			SecurityID: this.props.initialData.InitialSecurityID
 		};
 	},
 
 	startEditing: function() {
 		this.setState({
-			editing: true
+			editing: true,
+			message: ''
 		});
 	},
 
-	editingSuccessful: function(newModel) {
+	editingSuccessful: function(data) {
 		this.setState({
 			editing: false,
-			model: newModel
+			Variables: Tools.modelToArray(data.Variables),
+			SecurityID: data.NewSecurityID,
+			message: data.Message
 		});
 	},
 
@@ -46,19 +42,28 @@ var Variables = React.createClass({
 
 	render: function() {
 		if (!this.state.editing) {
+			var message = '';
+			if (this.state.message) {
+				message = (
+					<div className='alert alert-success' dangerouslySetInnerHTML={{__html:this.state.message}} />
+				);
+			}
+
 			return (
 				<VariableTable
 					context={this.props.context}
-					model={this.state.model}
+					model={this.state.Variables}
 					startEditing={this.startEditing}
+					message={message}
 					/>
 			);
 		} else {
 			return (
 				<VariableEditor
 					context={this.props.context}
-					blacklist={this.props.blacklist}
-					model={this.state.model}
+					blacklist={this.props.initialData.Blacklist}
+					model={this.state.Variables}
+					securityId={this.state.SecurityID}
 					editingSuccessful={this.editingSuccessful}
 					editingCancelled={this.editingCancelled}
 					/>

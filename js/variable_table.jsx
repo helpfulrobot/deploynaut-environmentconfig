@@ -18,14 +18,15 @@ var VariableTable = React.createClass({
 
 		return (
 			<div>
+				{this.props.message}
 				<div className="variables-actions variable-table-actions">
 					<button type="button" className="btn btn-primary" onClick={this.props.startEditing}>Edit</button>
 				</div>
 				<table className="variable-table table table-striped">
 					<thead>
 						<tr>
-							<th className="variable">Variable</th>
-							<th className="value">Value</th>
+							<th className="variable">Variable <small>(string)</small></th>
+							<th className="value">Value <small>(string)</small></th>
 						</tr>
 					</thead>
 					<tbody>

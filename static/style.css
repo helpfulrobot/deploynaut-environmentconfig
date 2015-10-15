@@ -35,3 +35,12 @@
 
 .variables .variable-table td {
   padding: 16px 16px 16px 18px; }
+
+.variables table {
+  clear: left; }
+  .variables table th small {
+    font-weight: normal;
+    font-size: 0.8em; }
+
+.variables .form-group {
+  margin-bottom: 0px; }

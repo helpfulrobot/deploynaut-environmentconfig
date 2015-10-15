@@ -1,3 +1,4 @@
+var _ = require('underscore');
 
 module.exports = {
 	/**
@@ -26,6 +27,16 @@ module.exports = {
 		}
 
 		return to;
+	},
+
+	modelToArray: function(model) {
+		return _.map(_.keys(model), function(key) {
+			return {
+				variable: key,
+				value: model[key]
+			};
+		});
 	}
+
 };
 
