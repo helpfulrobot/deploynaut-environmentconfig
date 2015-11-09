@@ -55,12 +55,6 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			return $this->environment404Response();
 		}
 
-		if (\Director::isDev()) {
-			\Requirements::javascript('deploynaut-environmentconfig/static/bundle-debug.js');
-		} else {
-			\Requirements::javascript('deploynaut-environmentconfig/static/bundle.js');
-		}
-
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
 		$model = [
