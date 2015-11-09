@@ -104,7 +104,9 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 			return $this->environment404Response();
 		}
 
+		// TODO once this dispatcher extends \Dispatcher, use getFormData.
 		$data = json_decode($request->postVar('Variables'), true);
+		$data = $this->stripNonPrintables($data);
 
 		// Validate against unsafe inputs.
 		$blacklist = $env->Backend()->config()->environment_config_blacklist ?: array();
@@ -154,6 +156,21 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 		$response->setBody(json_encode($data));
 		$response->setStatusCode(200);
 		return $response;
+	}
+
+	/**
+	 * Remove control characters from the input.
+	 *
+	 * @param string|array
+	 * @return string
+	 */
+	protected function stripNonPrintables($val) {
+		if(is_array($val)) {
+			foreach($val as $k => $v) $val[$k] = $this->stripNonPrintables($v);
+			return $val;
+		} else {
+			return preg_replace('/[[:cntrl:]]/', '', $val);
+		}
 	}
 
 	protected function getSecurityToken() {
