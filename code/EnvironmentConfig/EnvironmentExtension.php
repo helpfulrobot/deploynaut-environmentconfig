@@ -69,7 +69,8 @@ class EnvironmentExtension extends \DataExtension {
 		if (!$config || !$config->ID) {
 			$config = new Config();
 			$config->EnvironmentID = $this->owner->ID;
-			$config->write();
+			$config->writeToStage('Stage');
+			$config->publish('Stage', 'Live');
 		}
 
 		return $config;
