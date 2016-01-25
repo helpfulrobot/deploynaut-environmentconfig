@@ -8,7 +8,7 @@ namespace EnvironmentConfig;
 
 use Symfony\Component\Yaml\Yaml;
 
-class Config extends \DataObject implements \EnvironmentConfig\Backend {
+class Config extends \DataObject implements \EnvironmentConfig\Backend, \EnvironmentConfig\VariableBackend {
 
 	private static $db = array(
 		'SHA' => 'Varchar',
@@ -27,24 +27,51 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend {
 		'Environment' => 'DNEnvironment'
 	);
 
-	public function setVariables($array) {
-		$data = $this->getVersionDataArray();
-		// Only updating the environment variables.
-		$data['mysite::_ss_env'] = $array;
-		$this->writeVersionFromArray($data);
+	public function setVariables($array, $vhost = null) {
+		$data = $this->getArray();
 
-		return $this->SHA;
+		// Only updating the environment variables.
+		if (empty($vhost) || $vhost=='mysite') {
+			$data['mysite::_ss_env'] = $array;
+		} else {
+			// Initialise the much deeper array needed to store vhost variables.
+			$current = &$data;
+			$elems = array(
+				'ss_vhost::vhosts',
+				$vhost,
+				'customisations',
+				'mysite::vhost',
+				'user_defines'
+			);
+			foreach($elems as $elem) {
+				if (!isset($current[$elem])) {
+					$current[$elem] = array();
+				}
+				$current = &$current[$elem];
+			}
+
+			$current = $array;
+		}
+
+		$this->setArray($data);
 	}
 
-	public function getVariables($sha = null) {
-		$data = $this->getVersionDataArray($sha);
+	public function getVariables($sha = null, $vhost = null) {
+		$data = $this->getArray($sha);
+
 		// Only interested in the environment variables.
-		if (!empty($data['mysite::_ss_env'])) return $data['mysite::_ss_env'];
+		if (empty($vhost) || $vhost=='mysite') {
+			if (!empty($data['mysite::_ss_env'])) return $data['mysite::_ss_env'];
+		} else {
+			if (!empty($data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['user_defines'])) {
+				return $data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['user_defines'];
+			}
+		}
 
 		return array();
 	}
 
-	public function diffVariables($shaFrom, $shaTo = null) {
+	public function diffVariables($shaFrom, $shaTo = null, $vhost = null) {
 		if ($shaFrom===$shaTo) return array();
 
 		if ($shaFrom) {
@@ -80,13 +107,39 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend {
 		return $diff;
 	}
 
+	public function getArray($sha = null) {
+		$data = $this->getYaml($sha);
+
+		if ($data) {
+			return Yaml::parse($data);
+		} else {
+			return array();
+		}
+	}
+
 	public function setArray($array) {
-		$this->writeVersionFromArray($array);
+		// Prevent Yaml parser from inlining arrays by setting the threshold really high.
+		$this->Data = Yaml::dump($array, 1000);
+		// Only write if the data differs.
+		if (sha1($this->Data)!==$this->SHA) $this->write();
 	}
 
 	public function getYaml($sha = null) {
-		if (!$sha) return $this->Data;
-		return $this->getVersionData($sha);
+		if (!$sha) {
+			$v = $this;
+		} else {
+			// If SHA matches, it doesn't really matter which version is returned because the data will match.
+			$list = $this->allVersions(sprintf("\"SHA\"='%s'", $sha), 'LastEdited DESC', '1');
+			if ($list) {
+				$v = $list->first();
+			}
+		}
+
+		if (isset($v) && $v) {
+			return $v->Data;
+		}
+
+		return '';
 	}
 
 	public function getLatestSha() {
@@ -102,54 +155,4 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend {
 		$this->SHA = sha1($this->Data);
 	}
 
-	/**
-	 * Write the array data into the YAML Data field.
-	 *
-	 * @param array $array
-	 */
-	protected function writeVersionFromArray($array) {
-		// Prevent Yaml parser from inlining arrays by setting the threshold really high.
-		$this->Data = Yaml::dump($array, 1000);
-		// Only write if the data differs.
-		if (sha1($this->Data)!==$this->SHA) $this->write();
-	}
-
-	/**
-	 * Fetch the array from the specified SHA.
-	 *
-	 * @param string $sha
-	 * @return array
-	 */
-	protected function getVersionDataArray($sha = null) {
-		$data = $this->getVersionData($sha);
-
-		if ($data) {
-			return Yaml::parse($data);
-		} else {
-			return array();
-		}
-	}
-
-	/**
-	 * Fetch the canonical data from the specified SHA.
-	 *
-	 * @param string $sha
-	 * @return string
-	 */
-	protected function getVersionData($sha = null) {
-		if (!$sha) {
-			$v = $this;
-		} else {
-			// If SHA matches, it doesn't really matter which version is returned because the data will match.
-			$list = $this->allVersions(sprintf("\"SHA\"='%s'", $sha), 'LastEdited DESC', '1');
-			if ($list) {
-				$v = $list->first();
-			}
-		}
-
-		if (isset($v) && $v) {
-			return $v->Data;
-		}
-
-	}
 }
