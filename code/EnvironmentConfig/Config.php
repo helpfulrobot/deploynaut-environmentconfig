@@ -108,7 +108,8 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend {
 	 * @param array $array
 	 */
 	protected function writeVersionFromArray($array) {
-		$this->Data = Yaml::dump($array, 5);
+		// Prevent Yaml parser from inlining arrays by setting the threshold really high.
+		$this->Data = Yaml::dump($array, 1000);
 		// Only write if the data differs.
 		if (sha1($this->Data)!==$this->SHA) $this->write();
 	}
