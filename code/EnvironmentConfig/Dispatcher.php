@@ -57,8 +57,9 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 		\Requirements::css('deploynaut-environmentconfig/static/style.css');
 
+		$vhost = !empty($project->Vhost) ? $project->Vhost : null;
 		$model = [
-			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(),
+			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(null, $vhost),
 			'Blacklist' => $env->Backend()->config()->environment_config_blacklist ?: array(),
 			'InitialSecurityID' => $this->getSecurityToken()->getValue()
 		];
@@ -132,10 +133,12 @@ class Dispatcher extends \DNRoot implements \PermissionProvider {
 
 		ksort($data);
 
-		$env->getEnvironmentConfigBackend()->setVariables($data);
+		$vhost = !empty($project->Vhost) ? $project->Vhost : null;
+		$env->getEnvironmentConfigBackend()->setVariables($data, $vhost);
 
+		$vhost = !empty($project->Vhost) ? $project->Vhost : null;
 		return $this->asJSON([
-			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(),
+			'Variables' => $env->getEnvironmentConfigBackend()->getVariables(null, $vhost),
 			'Message' => $message
 		]);
 	}
