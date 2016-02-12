@@ -8,4 +8,4 @@ DNEnvironment:
     - 'EnvironmentConfig\EnvironmentExtension'
 Director:
   rules:
-    'naut/project/$Project/environment/$Environment/configuration': 'EnvironmentConfig\Dispatcher',
+    'naut/project/$Project/environment/$Environment/configuration': 'EnvironmentConfig\VariableDispatcher',

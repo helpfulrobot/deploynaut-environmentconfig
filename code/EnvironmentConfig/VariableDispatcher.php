@@ -5,7 +5,7 @@
 
 namespace EnvironmentConfig;
 
-class Dispatcher extends \Dispatcher implements \PermissionProvider {
+class VariableDispatcher extends \Dispatcher implements \PermissionProvider {
 
 	const ACTION_CONFIGURATION = 'configuration';
 
