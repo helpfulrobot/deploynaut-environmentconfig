@@ -59,7 +59,7 @@ var VariableEditor = React.createClass({
 			type: "POST",
 			url: this.props.context.envUrl + '/configuration/save',
 			data: {
-				Variables: JSON.stringify(assocArray),
+				Details: JSON.stringify(assocArray),
 				SecurityID: this.props.securityId
 			}
 		}))
