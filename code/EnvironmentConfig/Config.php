@@ -34,6 +34,10 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend, \Environ
 		if (empty($vhost) || $vhost=='mysite') {
 			$data['mysite::_ss_env'] = $array;
 		} else {
+			if(!$this->hasVhost($vhost)) {
+				throw new \Exception("$vhost doesn't exist in configuration.");
+			}
+
 			// Initialise the much deeper array needed to store vhost variables.
 			$current = &$data;
 			$elems = array(
@@ -121,7 +125,10 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend, \Environ
 		// Prevent Yaml parser from inlining arrays by setting the threshold really high.
 		$this->Data = Yaml::dump($array, 1000);
 		// Only write if the data differs.
-		if (sha1($this->Data)!==$this->SHA) $this->write();
+		if (sha1($this->Data)!==$this->SHA) {
+			$this->writeToStage('Stage');
+			$this->publish('Stage', 'Live');
+		}
 	}
 
 	public function getYaml($sha = null) {
@@ -144,6 +151,42 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend, \Environ
 
 	public function getLatestSha() {
 		return $this->SHA;
+	}
+
+	public function addVhost($vhost) {
+		if($this->hasVhost($vhost)) {
+			return;
+		}
+
+		$vhost = strtolower($vhost);
+		$data = $this->getArray();
+		
+		if(!isset($data['ss_vhost::vhosts'])) {
+			$data['ss_vhost::vhosts'] = [];
+		}
+		if(!isset($data['ss_vhost::vhosts'][$vhost])) {
+			$data['ss_vhost::vhosts'][$vhost] = [];
+		}
+
+		$this->setArray($data);
+	}
+
+	public function removeVhost($vhost) {
+		if(!$this->hasVhost($vhost)) {
+			return;
+		}
+		$vhost = strtolower($vhost);
+		$data = $this->getArray();
+		unset($data['ss_vhost::vhosts'][$vhost]);
+
+		$this->setArray($data);
+	}
+		
+	public function hasVhost($vhost) {
+		$vhost = strtolower($vhost);
+		$data = $this->getArray();
+
+		return isset($data['ss_vhost::vhosts']) && isset($data['ss_vhost::vhosts'][$vhost]);
 	}
 
 	/**
