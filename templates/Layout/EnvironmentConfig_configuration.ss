@@ -25,7 +25,7 @@
 		</p>
 	</div>
 
-	<div class="variables" id="environmentconfig-variables-holder"></div>
+	$getReactComponent(Variables)
 
 	<div class="variables-description small"><p><i>
 		Note: These environment values will be readable by
@@ -34,22 +34,5 @@
 		Platform Dashboard server.
 	</i></p></div>
 
-	<script id="environmentconfig-variables-model" type="application/json">
-		$Model
-	</script>
-
-	<script>
-		var environmentConfigContext = {
-			projectUrl: "{$absoluteBaseURL}naut/api/$CurrentProject.Name",
-			envUrl: "{$absoluteBaseURL}{$CurrentEnvironment.Link}",
-			envName: "{$CurrentEnvironment.Name}",
-			siteUrl: "{$CurrentEnvironment.URL}",
-			<% if $PlatformSpecificStrings %>
-				<% loop $PlatformSpecificStrings %>
-					$Code: "$String",
-				<% end_loop %>
-			<% end_if %>
-		};
-	</script>
 </div>
 

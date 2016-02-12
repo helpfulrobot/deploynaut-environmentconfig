@@ -83,7 +83,7 @@ class EnvironmentExtension extends \DataExtension {
 	 */
 	public function updateMenu(\ArrayList $list) {
 		if (!$this->owner->Backend()->config()->supports_environment_config) return;
-		if(!$this->owner->Project()->allowed(Dispatcher::ALLOW_ENVIRONMENT_CONFIG_READ)) return;
+		if(!$this->owner->Project()->allowed(VariableDispatcher::ALLOW_ENVIRONMENT_CONFIG_READ)) return;
 
 		$controller = \Controller::curr();
 		$actionType = $controller->getField('CurrentActionType');
@@ -96,7 +96,7 @@ class EnvironmentExtension extends \DataExtension {
 			),
 			'Title' => 'Configuration',
 			'IsCurrent' => $this->owner->isCurrent(),
-			'IsSection' => $this->owner->isSection() && $actionType == Dispatcher::ACTION_CONFIGURATION
+			'IsSection' => $this->owner->isSection() && $actionType == VariableDispatcher::ACTION_CONFIGURATION
 		)));
 	}
 

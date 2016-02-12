@@ -1,7 +1,6 @@
 var _ = require('underscore');
 var VariableTable = require('./variable_table.jsx');
 var VariableEditor = require('./variable_editor.jsx');
-var Tools = require('./tools.jsx');
 
 /**
  * Variables provides a UI for displaying and editing environment variables. The main state is held here,
@@ -10,11 +9,20 @@ var Tools = require('./tools.jsx');
  */
 var Variables = React.createClass({
 
+	modelToArray: function(model) {
+		return _.map(_.keys(model), function(key) {
+			return {
+				variable: key,
+				value: model[key]
+			};
+		});
+	},
+
 	getInitialState: function() {
 		return {
 			editing: false,
-			Variables: Tools.modelToArray(this.props.initialData.Variables),
-			SecurityID: this.props.initialData.InitialSecurityID
+			Variables: this.modelToArray(this.props.model.Variables),
+			SecurityID: this.props.model.InitialSecurityID
 		};
 	},
 
@@ -28,7 +36,7 @@ var Variables = React.createClass({
 	editingSuccessful: function(data) {
 		this.setState({
 			editing: false,
-			Variables: Tools.modelToArray(data.Variables),
+			Variables: this.modelToArray(data.Variables),
 			SecurityID: data.NewSecurityID,
 			message: data.Message
 		});
@@ -45,28 +53,34 @@ var Variables = React.createClass({
 			var message = '';
 			if (this.state.message) {
 				message = (
-					<div className='alert alert-success' dangerouslySetInnerHTML={{__html:this.state.message}} />
+					<div className="variables">
+						<div className='alert alert-success' dangerouslySetInnerHTML={{__html:this.state.message}} />
+					</div>
 				);
 			}
 
 			return (
+				<div className="variables">
 				<VariableTable
 					context={this.props.context}
 					model={this.state.Variables}
 					startEditing={this.startEditing}
 					message={message}
 					/>
+				</div>
 			);
 		} else {
 			return (
+				<div className="variables">
 				<VariableEditor
-					context={this.props.context}
-					blacklist={this.props.initialData.Blacklist}
+					FormAction={this.props.model.FormAction}
+					blacklist={this.props.model.Blacklist}
 					model={this.state.Variables}
 					securityId={this.state.SecurityID}
 					editingSuccessful={this.editingSuccessful}
 					editingCancelled={this.editingCancelled}
 					/>
+				</div>
 			);
 		}
 	}
