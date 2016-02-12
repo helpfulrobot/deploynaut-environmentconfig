@@ -1,13 +1,4 @@
-var Variables = require('./variables.jsx');
-var Tools = require('./tools.jsx');
+var Tools = require('../../deploynaut/js/tools.jsx');
 
-var holder = document.getElementById('environmentconfig-variables-holder');
-if (holder) {
-	var data = Tools.readInlineData('environmentconfig-variables-model');
-	React.render(
-		<Variables
-			initialData={data}
-			context={environmentConfigContext} />,
-		holder
-	);
-}
+var Variables = require('./variables.jsx');
+Tools.install(Variables, 'Variables');

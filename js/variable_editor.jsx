@@ -1,4 +1,3 @@
-var Tools = require('./tools.jsx');
 var trim = require('underscore.string/trim');
 var _ = require('underscore');
 
@@ -7,9 +6,24 @@ var _ = require('underscore');
  * capability. Variables need to be kept unique.
  */
 var VariableEditor = React.createClass({
+
+	deepCopyModel: function(from) {
+		var to = [];
+		for (var i=0; i<from.length; i++) {
+			if (!from[i].deleted && !from[i].vacant) {
+				to.push({
+					variable: from[i].variable,
+					value: from[i].value
+				});
+			}
+		}
+
+		return to;
+	},
+
 	getInitialState: function() {
 
-		var model = Tools.deepCopyModel(this.props.model);
+		var model = this.deepCopyModel(this.props.model);
 
 		// Add additional state needed for editing.
 		for (var i=0; i<model.length; i++) {
@@ -44,7 +58,7 @@ var VariableEditor = React.createClass({
 		});
 
 		// Deep copying also filters the model.
-		var newModel = Tools.deepCopyModel(this.state.model);
+		var newModel = this.deepCopyModel(this.state.model);
 
 		// Convert the data back into associative array expected by the backend.
 		var assocArray = {};
@@ -57,7 +71,7 @@ var VariableEditor = React.createClass({
 		var self = this;
 		Q($.ajax({
 			type: "POST",
-			url: this.props.context.envUrl + '/configuration/save',
+			url: this.props.FormAction,
 			data: {
 				Details: JSON.stringify(assocArray),
 				SecurityID: this.props.securityId
@@ -199,7 +213,6 @@ var VariableEditor = React.createClass({
 		return (
 			<form className="variable-editor" onSubmit={this.save} >
 				<VariableEditorActions
-					context={this.props.context}
 					disabled={!formValid}
 					saving={this.state.saving}
 					cancel={this.props.editingCancelled} />

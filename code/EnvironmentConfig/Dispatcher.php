@@ -77,7 +77,7 @@ class Dispatcher extends \Dispatcher implements \PermissionProvider {
 	 */
 	public function getModel($name) {
 		$model = [
-			'InitialSecurityID' => $this->getSecurityToken()->getValue(),
+			'FormAction' => \Controller::join_links($this->environment->Link(), '/configuration/save'),
 			'Blacklist' => [],
 			'Variables' => [],
 		];
