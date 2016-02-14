@@ -50,8 +50,10 @@ class EnvironmentExtension extends \DataExtension {
 	 * Flush the changes to the backend.
 	 */
 	public function onAfterWrite() {
-		$backend = $this->owner->getEnvironmentConfigBackend();
-		$backend->setArray($this->owner->ConfigurationParsed);
+		if(!empty($this->owner->ConfigurationParsed)) {
+			$backend = $this->owner->getEnvironmentConfigBackend();
+			$backend->setArray($this->owner->ConfigurationParsed);
+		}
 	}
 
 	/**
@@ -75,7 +77,7 @@ class EnvironmentExtension extends \DataExtension {
 
 		return $config;
 	}
-
+	
 	/**
 	 * Add the "configuration" menu item to the environment screen.
 	 *

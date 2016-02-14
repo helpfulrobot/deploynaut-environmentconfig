@@ -37,4 +37,31 @@ interface Backend {
 	 */
 	public function getLatestSha();
 
+	/**
+	 * Adds a vhost to config
+	 *
+	 * @param string $vhost
+	 *
+	 * @return null
+	 */
+	public function addVhost($vhost);
+
+	/**
+	 * Removes a vhost from config
+	 *
+	 * @param string $vhost
+	 *
+	 * @return null
+	 */
+	public function removeVhost($vhost);
+
+	/**
+	 * Checks if a vhost already exists in config
+	 *
+	 * @param string $vhost
+	 *
+	 * @return null
+	 */
+	public function hasVhost($vhost);
+
 }
