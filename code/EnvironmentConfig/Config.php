@@ -190,6 +190,92 @@ class Config extends \DataObject implements \EnvironmentConfig\Backend, \Environ
 	}
 
 	/**
+	 * @param string $vhost
+	 * @param string $servername
+	 * @param bool $primary - is this the new primary domain name
+	 */
+	public function addVhostServername($vhost, $servername, $primary) {
+		$vhost = strtolower($vhost);
+		if(!$this->hasVhost($vhost)) {
+			return;
+		}
+		$data = $this->getArray();
+		if(!isset($data['ss_vhost::vhosts'][$vhost]['server_names'])) {
+			$data['ss_vhost::vhosts'][$vhost]['server_names'] = [];
+		}
+
+		$changed = false;
+		// already set
+		if(!in_array($servername, $this->getVhostServernames($vhost))) {
+			$data['ss_vhost::vhosts'][$vhost]['server_names'][] = $servername;
+			$changed = true;
+		}
+
+		if($primary) {
+			if(!isset($data['ss_vhost::vhosts'][$vhost]['customisations'])) {
+				$data['ss_vhost::vhosts'][$vhost]['customisations'] = [];
+			}
+			if(!isset($data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost'])) {
+				$data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost'] = [];
+			}
+			$data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['domainname'] = $servername;
+			$changed = true;
+		}
+
+		if($changed) {
+			$this->setArray($data);
+		}
+	}
+
+	/**
+	 * @param string $vhost
+	 *
+	 * @return array
+	 */
+	public function getVhostServernames($vhost) {
+		$vhost = strtolower($vhost);
+		if(!$this->hasVhost($vhost)) {
+			return [];
+		}
+		$data = $this->getArray();
+		if(!isset($data['ss_vhost::vhosts'][$vhost]['server_names'])) {
+			return [];
+		}
+		return $data['ss_vhost::vhosts'][$vhost]['server_names'];
+	}
+
+	/**
+	 * @param string $vhost
+	 * @param string $servername
+	 */
+	public function removeVhostServername($vhost, $servername) {
+		$serverNames = $this->getVhostServernames($vhost);
+		if(count($serverNames) == 0) {
+			return;
+		}
+		if(!in_array($servername, $serverNames)) {
+			return;
+		}
+		$newList = [];
+		foreach($serverNames as $value) {
+			if($value == $servername) {
+				continue;
+			}
+			$newList[] = $value;
+		}
+		$data = $this->getArray();
+
+		$data['ss_vhost::vhosts'][$vhost]['server_names'] = $newList;
+
+		if(!empty($data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['domainname'])) {
+			if($data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['domainname'] == $servername) {
+				unset($data['ss_vhost::vhosts'][$vhost]['customisations']['mysite::vhost']['domainname']);
+			}
+		}
+		$this->setArray($data);
+	}
+
+	/**
 	 * Data content is treated as canonical, keep the SHA up to date
 	 * so it can be found later.
 	 */
